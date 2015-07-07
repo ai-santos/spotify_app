@@ -1,32 +1,55 @@
 $(function() {
+
+  var $searchTrack = $('#spotify-search');
+
+  var $playTrack = $('#track');
   
-    var $searchTrack = $("#spotify-search");
-    $searchTrack.on("submit", function(event) { 
-      event.preventDefault();
-      console.log('form submitted!');
+  var $results = $('#results');
 
+  
+  var trackTemplate = _.template($('#track-template').html());
 
+  
+  $searchTrack.on('submit', function(event) {
+    event.preventDefault();
 
-var templatingFunction = _.template($('#spotify-template').html());
-var $results = ("#results");
-    var $playTrack = $("#track");
+    
+    $results.empty();
+
+    
     var playTrack = $playTrack.val();
-    var $newTrack = "http://api.spotify.com/v1/search?type=track&q="+ playTrack; 
+
+    
+    var $newTrack = 'https://api.spotify.com/v1/search?type=track&q=' + playTrack;
+
+    
     $.get($newTrack, function(data) {
-        console.log(data.tracks.items);
-         var results = data.tracks.items;
-         console.log(templatingFunction(data.tracks.items[0]))
+      var resultsTrack = data.tracks.items;
+      console.log(resultsTrack);
+
+      if (resultsTrack.length > 0) {
+
+        
+        _.each(resultsTrack, function(result, index) {
+          
+          var templateInfo = {
+            albumArt: result.album.images.length > 0 ? result.album.images[0].url : null,
+            artist: result.artists[0].name,
+            name: result.name,
+            previewUrl: result.preview_url
+          };
+
+          var $resultsTrack = $(trackTemplate(templateInfo));
+          $results.append($resultsTrack);
+        });
+
+      } else {
+        $results.append('No results.');
+      }
     });
 
-  })
-
-    _.each(results, function (result, index) {
-    var trackView = $(templatingFunction(result));
-    console.log(trackView);
-    $results.append(itemView);
-    console.log(itemView);
-});
-
+    $searchTrack[0].reset();
+    $playTrack.focus();
+  });
 
 });
-
